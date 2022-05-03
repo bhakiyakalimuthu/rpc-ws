@@ -1,4 +1,4 @@
-package server
+package server1
 
 import (
 	"encoding/json"
@@ -12,14 +12,15 @@ var upgrader = websocket.Upgrader{}
 
 type Server struct{}
 
-func (s *Server) Start() {
-	log.Info("start server......")
+func (s *Server) Start(port string) {
+	log.Info("Init server1......", "port", port)
 	http.HandleFunc("/", s.handleRPC)
 	http.HandleFunc("/ws/", s.handleWS)
-	if err := http.ListenAndServe(":6666", nil); err != nil {
+	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Crit("failed to listen and serve", "err", err)
 	}
 }
+
 func (s *Server) handleRPC(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -34,7 +35,7 @@ func (s *Server) handleRPC(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	log.Info("request received", "request", req)
+
 	if req.Method == "eth_blockNumber" {
 		res := JsonRpcResponse{
 			Jsonrpc: "2.0",
@@ -53,6 +54,7 @@ func (s *Server) handleRPC(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(res)
 		return
 	}
+	log.Info("request received", "request", req)
 }
 
 func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
